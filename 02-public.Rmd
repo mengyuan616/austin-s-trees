@@ -1,0 +1,106 @@
+---
+title: "Negative impact on Austin's trees from land development"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Data
+To analyze how commercial development has led to Austin's tree removals and affected the city's Urban Forest plan, I used the dataset published on data.austintexas.gov, https://data.austintexas.gov/Building-and-Development/Impacts-to-Austin-s-Urban-Forest-from-Commercial-D/j9y9-bvcw/data, which shows all types of commercial development that will entail impact to Austin’s trees from Jan 1, 2012 to one day prior to the current date. It includes the work type, tree inches removed and replanted, existing land use and prosed land use, etc. 
+
+
+## Setting up
+Required packages for analyzing and plotting the dataset.
+
+```{r setup}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(forcats)
+library(sp)
+library(mapview)
+```
+
+## Importing the two datasets
+
+```{r}
+impact <- read_csv("data-raw/Commercial_Development.csv") %>% clean_names()
+```
+
+## More on data cleaning: Splitting latitude and longitude and removing invalid information
+```{r}
+impact <- impact %>% 
+  separate(location, c("longitude","latitude"), sep = ",") %>% 
+  mutate(
+    longitude = str_remove(longitude, "\\("),
+    latitude = str_remove(latitude,"\\)"),
+    longitude = na_if(longitude,"1000000000000000000000000000000"), 
+    latitude = na_if(latitude," 1000000000000000000000000000000"),
+    longitude = longitude %>% as.numeric(),
+    latitude = latitude %>% as.numeric()
+    )
+```
+
+## The trees removed for commercial use are nearly three times of those replanted
+To figure out the gap between tree removed and replanted, I made a table containing relevant columns and plotted it on a bar chart, and found only a third of removed trees are replanted each year.
+
+```{r}
+# get the total inches removed and replanted each year
+compare <- impact %>% 
+  group_by(year) %>% 
+  summarise(
+    total_removed = sum(total_removed),
+    total_replanted = sum(inches_replanted)
+  )
+
+# reset the table using gather() to make it easier for plotting
+compare <- compare %>% gather(key = "type", value = "total", 2:3)
+
+# plotting
+ggplot(compare, aes(x = year, y = total, fill = type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_continuous(breaks=seq(2012,2018,1)) +
+  scale_y_continuous(breaks=seq(0,175000,25000)) +
+  labs(title = "Total inches of trees removed and replanted each year") +
+  theme_minimal()
+```
+
+## Consolidation is the top type of site plan that leads to tree removals.
+I made another bar chart to show top 10 commercial work types that can lead to tree removals, and consolidation ranks No.1.
+
+```{r}
+# get the number of each work type
+workType <- impact %>% 
+  group_by(work_type) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  head(10) %>% 
+  mutate(work_type = fct_reorder(work_type, count))
+
+# plotting
+workType %>% 
+  ggplot(aes(x = work_type, y = count)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Top 10 commercial work types that lead to tree removals", x = "Work types", y = "Number of the work type") +
+  geom_text(aes(label = count), hjust = -.05) +
+  theme_minimal()
+```
+
+
+## Downtown and its surrounding areas have been most affected
+To figure out what areas have been impacted most by commercial development, I made a map to show all the commercial cases, and it turned out that downtown and its surrounding areas suffer most, as they've had most cases approved and implemented.
+
+```{r}
+map <- impact %>% 
+  drop_na(longitude) %>% 
+  select(issue_date, case_type, work_type,total_removed, inches_replanted, longitude, latitude)
+```
+
+```{r}
+coordinates(map) <- ~ longitude + latitude
+proj4string(map) <- "+init=epsg:4326"
+
+mapview(map)
+```
+

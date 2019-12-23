@@ -1,0 +1,132 @@
+---
+title: "Impacts to Austin's Urban Forest from Commercial Development"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(forcats)
+library(sp)
+library(mapview)
+```
+
+## Import
+This dataset is published on data.austintexas.gov, which shows all types of commercial development that will entail impact to Austin’s trees from Jan 1, 2012 to one day prior to the current date. It includes the work type, watershed involved, existing land use and prosed land use, etc. https://data.austintexas.gov/Building-and-Development/Impacts-to-Austin-s-Urban-Forest-from-Commercial-D/j9y9-bvcw/data
+
+```{r import}
+impact <- read_csv("data-raw/Commercial_Development.csv") %>% clean_names()
+```
+
+```{r}
+impact <- impact %>% 
+  separate(location, c("longitude","latitude"), sep = ",") %>% 
+  mutate(
+    longitude = str_remove(longitude, "\\("),
+    latitude = str_remove(latitude,"\\)"),
+    longitude = na_if(longitude,"1000000000000000000000000000000"), 
+    latitude = na_if(latitude," 1000000000000000000000000000000"),
+    longitude = longitude %>% as.numeric(),
+    latitude = latitude %>% as.numeric()
+    )
+```
+
+
+## What I want to learn from the data
+
+1. Total inches removed and replanted each year
+
+```{r}
+compare <- impact %>% 
+  group_by(year) %>% 
+  summarise(
+    total_removed = sum(total_removed),
+    total_replanted = sum(inches_replanted)
+  )
+compare
+```
+
+*need to reset the table to make it easier for plotting
+
+```{r}
+compare <- compare %>% gather(key = "type", value = "total", 2:3)
+compare
+```
+
+
+```{r}
+ggplot(compare, aes(x = year, y = total, fill = type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_continuous(breaks=seq(2012,2018,1)) +
+  scale_y_continuous(breaks=seq(0,175000,25000)) +
+  labs(title = "Total inches of trees removed and replanted each year") +
+  theme_minimal()
+```
+
+
+2. Summary for work types
+
+```{r}
+workType <- impact %>% 
+  group_by(work_type) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  head(10) %>% 
+  mutate(work_type = fct_reorder(work_type, count))
+```
+
+```{r}
+workType %>% 
+  ggplot(aes(x = work_type, y = count)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Top 10 commercial work types that lead to tree removals", x = "Work types", y = "Number of the work type") +
+  geom_text(aes(label = count), hjust = -.05, size = 2.2)
+```
+
+3. Summary for case type
+
+```{r}
+caseType <- impact %>% 
+  group_by(case_type) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  mutate(case_type = fct_reorder(case_type, count))
+caseType
+```
+
+```{r}
+caseType %>% 
+  ggplot(aes(x = case_type, y = count)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "The top case type that impacts trees", x = "Case types", y = "Number of the case type") +
+  geom_text(aes(label = count), hjust = -.05)
+```
+
+4. Make a map 
+
+For testing
+```{r}
+mapview(breweries)
+```
+
+Using mapview to show case locations to see what areas have been the most affected
+
+```{r}
+map <- impact %>% 
+  drop_na(longitude) %>% 
+  select(issue_date, case_type, work_type,total_removed, inches_replanted, longitude, latitude)
+```
+
+
+```{r}
+coordinates(map) <- ~ longitude + latitude
+proj4string(map) <- "+init=epsg:4326"
+
+mapview(map)
+```
+
