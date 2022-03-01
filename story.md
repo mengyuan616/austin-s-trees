@@ -11,6 +11,8 @@ From 2012 to 2018, nearly 80,000 inches of trees are removed each year because o
 
 “Development is an integral part of the challenge for any urban forest,” said Emily King, manager of the City of Austin’s Urban Forest Program. “Austin continues to experience increases in population, and development is definitely a large stressor to our canopy.”
 
+<img src="trees_removed.png" alt="" width="672" height="480">
+
 Christopher Dolph, research analyst of the Development Service Department for the City of Austin, created a dataset about all commercial cases that led to tree removals in the past seven years. 
 
 “We will definitely consider how much impact it will have to the trees when deciding whether to approve a case, because the first goal is always to preserve the trees,” Dolph said.
@@ -22,6 +24,8 @@ When trees are permitted to be removed, it’s ideal to have new trees planted b
 Based on the analysis of Dolph’s dataset, consolidation accounts for most tree removals, where there is readjustment and rearrangement of fragmented land parcels, such as constructing a restaurant or an office building with associated improvements. Consolidation takes up more than 70 percent of all cases approved within seven years. 
 
 Except for a few cases that meet the exemption requirements, all commercial site plans need to go through strict review procedures based on comprehensive decisions of various departments, according to the city’s Development Services Department. For consolidated site plans, the review contains two major parts: one for how the land is going to be used, the other for what potential impact the plan has on the city. And the tree protection aspect is taken into account through the second part. 
+
+<img src="commercial.png" alt="" width="672" height="480">
 
 Regardless of work types, King said it can be complex endeavor when it comes to replanting,  because trees must be properly selected for planting based on species, growth rate and pattern, location, etc.
 
@@ -52,6 +56,8 @@ King said with the recommended levels of service associated with urban forestry 
 Apart from commercial development, King said climate change is the biggest challenge that Austin’s trees are facing right now. Forest health threats, such as oak wilt and the Emerald Ash Borer are also adversely affecting the urban forest plan, she added. 
 
 “Two years ago when the Texas state legislature was in session, there was a lot of discussion and scrutiny over tree ordinances and city's ability to self-govern,” King said. “There is interest at the state level for curbing what cities regulate.” 
+
+<img src="map.png" alt="" width="672" height="480">
 
 Alexatos said riparian, urban and rapidly urbanizing areas in Austin have the most need for reforestation. It also shown in the map that downtown and its surroundings are most concentrated for commercial construction.
 
